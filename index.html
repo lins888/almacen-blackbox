@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📦 Almacén Automático — 305 Ítems</title>
+<link rel="icon" href="https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.4/assets/minecraft/textures/block/grass_block_side.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root {
+    --tex: url('https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.4/assets/minecraft/textures/block/dirt.png');
+    --panel: #c6c6c6;
+    --slot: #8b8b8b;
+    --ink: #2b2b2b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    color: #f0f0f0;
+    font-family: 'VT323', monospace;
+    min-height: 100vh;
+    background-color: #1a120b;
+    background-image: linear-gradient(rgba(10,8,6,.85), rgba(10,8,6,.85)), var(--tex);
+    background-size: auto, 64px 64px;
+    image-rendering: pixelated;
+  }
+
+  .wrap { max-width: 1220px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  header { text-align: center; margin-bottom: 16px; }
+
+  .logo-row {
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    margin-bottom: 14px;
+  }
+  .logo-row img {
+    width: 52px; height: 52px;
+    image-rendering: pixelated;
+    filter: drop-shadow(4px 4px 0 rgba(0,0,0,.6));
+  }
+
+  h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(1rem, 3.2vw, 1.7rem);
+    color: #fff;
+    text-shadow: 3px 3px 0 #3f3f3f;
+    line-height: 1.5;
+  }
+  h1 .green { color: #54d64c; text-shadow: 3px 3px 0 #1c4a1a; }
+
+  .subtitle { color: #d8d8b0; font-size: 1.25rem; max-width: 700px; margin: 0 auto 4px; letter-spacing: .5px; }
+  .subtitle b { color: #ffe15c; font-weight: 400; }
+  .subtitle.small { font-size: 1.05rem; color: #a8a89a; }
+
+  .stats-bar {
+    display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+    margin: 26px 0 10px;
+  }
+  .stat-chip {
+    font-family: 'VT323', monospace;
+    font-size: 1.1rem;
+    background: #7a7a7a;
+    border: 2px solid #000;
+    box-shadow: inset 0 3px 0 #a8a8a8, inset 0 -4px 0 #565656;
+    color: #fff;
+    text-shadow: 2px 2px 0 #3f3f3f;
+    padding: 7px 16px 9px;
+    cursor: pointer;
+    user-select: none;
+    display: flex; align-items: center; gap: 8px;
+    transition: transform .06s;
+  }
+  .stat-chip .dot { width: 10px; height: 10px; display: inline-block; border: 1px solid #000; }
+  .stat-chip:hover { background: #8d9c8d; }
+  .stat-chip:active { transform: translateY(2px); box-shadow: inset 0 2px 0 #565656; }
+  .stat-chip.active {
+    background: #5f9e46;
+    box-shadow: inset 0 3px 0 #83c96a, inset 0 -4px 0 #3f6e2c;
+  }
+
+  .search-box { display: flex; justify-content: center; margin: 18px 0 38px; }
+  .search-box input {
+    width: min(540px, 100%);
+    background: #000;
+    border: 2px solid #a0a0a0;
+    outline: 2px solid #000;
+    padding: 10px 16px;
+    font-size: 1.35rem;
+    color: #fff;
+    font-family: 'VT323', monospace;
+    letter-spacing: .5px;
+  }
+  .search-box input:focus { border-color: #fff; outline: none; }
+  .search-box input::placeholder { color: #6f6f6f; }
+
+  .category { margin-bottom: 34px; }
+
+  .panel {
+    background: var(--panel);
+    border: 3px solid #000;
+    box-shadow: inset 3px 3px 0 #ffffff, inset -3px -3px 0 #555555;
+    padding: 16px 14px 14px;
+  }
+
+  .cat-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+    padding: 0 4px 10px;
+    border-bottom: 2px solid #9a9a9a;
+  }
+  .cat-icon {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--slot);
+    border: 2px solid;
+    border-color: #373737 #ffffff #ffffff #373737;
+    font-size: 1.15rem;
+  }
+  .cat-icon img { width: 28px; height: 28px; image-rendering: pixelated; }
+  .cat-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.78rem;
+    color: #3f3f3f;
+    line-height: 1.5;
+  }
+  .cat-count {
+    margin-left: auto;
+    font-family: 'VT323', monospace;
+    font-size: 1.15rem;
+    color: #fff;
+    text-shadow: 1px 1px 0 rgba(0,0,0,.5);
+    background: var(--cat-color);
+    border: 2px solid #000;
+    padding: 2px 12px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+    gap: 6px;
+  }
+
+  .item {
+    background: var(--slot);
+    border: 2px solid;
+    border-color: #373737 #ffffff #ffffff #373737;
+    padding: 6px 9px;
+    display: flex; align-items: center; gap: 10px;
+    cursor: default;
+    transition: background .08s;
+  }
+  .item:hover {
+    background: #a3a3a3;
+    outline: 2px solid #fff;
+    outline-offset: -4px;
+  }
+  .icon-slot {
+    width: 36px; height: 36px; min-width: 36px;
+    background: #7b7b7b;
+    border: 1px solid;
+    border-color: #303030 #d0d0d0 #d0d0d0 #303030;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon-slot img { width: 28px; height: 28px; image-rendering: pixelated; }
+  .icon-slot .fallback { font-size: 1.1rem; }
+  .item .info { min-width: 0; }
+  .item .name {
+    font-size: 1.12rem;
+    color: var(--ink);
+    line-height: 1.05;
+    letter-spacing: .3px;
+  }
+  .item .id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    color: #4d4d4d;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .hidden { display: none !important; }
+
+  .no-results {
+    text-align: center; color: #d8d8b0; padding: 60px 0; font-size: 1.5rem; display: none;
+    text-shadow: 2px 2px 0 #000;
+  }
+
+  footer {
+    text-align: center; margin-top: 50px; color: #b8b8a0; font-size: 1.15rem;
+    border-top: 2px solid #4a3b2a; padding-top: 22px;
+    text-shadow: 1px 1px 0 #000;
+  }
+  footer .warn { color: #ffcf4d; display: block; margin-top: 8px; }
+
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); }
+    .item .id { display: none; }
+    .cat-title { font-size: 0.62rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo-row">
+      <img src="https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.4/assets/minecraft/textures/block/grass_block_side.png" alt="logo">
+      <h1>ALMACÉN <span class="green">AUTOMÁTICO</span></h1>
+      <img src="https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.4/assets/minecraft/textures/block/crafting_table_front.png" alt="logo">
+    </div>
+    <p class="subtitle"><b>305 ítems esenciales</b> · todos stackean a 64 · BlackBox Server</p>
+    <p class="subtitle small">Excluidos: perlas de ender, ojos de ender, netherita, Estrella del Nether, huevos, bolas de nieve, letreros (stack 16) · cubetas, herramientas, pociones (stack 1)</p>
+  </header>
+
+  <div class="stats-bar" id="chips">
+    <div class="stat-chip active" data-cat="all"><b>Todos</b> · 305</div>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="search" placeholder="🔍 Buscar ítem o ID… (ej: escaleras, hierro, pulida)">
+  </div>
+
+  <div id="categories"></div>
+  <div class="no-results" id="noResults">Sin resultados para esa búsqueda 🕳️</div>
+
+  <footer>
+    Sistema de almacenamiento automático · 9 categorías · 305 filtros de tolva
+    <span class="warn">⚠️ Ítems escasos (Cráneo de wither, Caparazón de shulker): mejor al final de la línea, nunca hay suficientes para mantener el filtro cargado.</span>
+  </footer>
+</div>
+
+<script>
+const TEX = 'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.4/assets/minecraft/textures/';
+
+// texturas que no se llaman igual que el ID (caras laterales, renombres, etc.)
+const SPECIAL = {
+  grass_block: 'block/grass_block_side.png',
+  melon: 'block/melon_side.png',
+  pumpkin: 'block/pumpkin_side.png',
+  carved_pumpkin: 'block/carved_pumpkin.png',
+  hay_block: 'block/hay_block_side.png',
+  tnt: 'block/tnt_side.png',
+  furnace: 'block/furnace_front.png',
+  dispenser: 'block/dispenser_front.png',
+  dropper: 'block/dropper_front.png',
+  barrel: 'block/barrel_side.png',
+  quartz_block: 'block/quartz_block_side.png',
+  observer: 'block/observer_front.png',
+  piston: 'block/piston_side.png',
+  sticky_piston: 'block/piston_top_sticky.png',
+  snow_block: 'block/snow.png',
+  dried_kelp_block: 'block/dried_kelp_side.png',
+  basalt: 'block/basalt_side.png',
+  magma_block: 'block/magma.png',
+  bone_block: 'block/bone_block_side.png',
+  cactus: 'block/cactus_side.png',
+  glass_pane: 'block/glass.png',
+  scaffolding: 'block/scaffolding_side.png',
+  scute: 'item/turtle_scute.png',
+  bamboo: 'item/bamboo.png',
+  kelp: 'item/kelp.png',
+  sugar_cane: 'item/sugar_cane.png',
+  wheat: 'item/wheat.png',
+  redstone: 'item/redstone.png',
+  smooth_sandstone: 'block/sandstone_top.png',
+  smooth_red_sandstone: 'block/red_sandstone_top.png',
+  smooth_quartz: 'block/quartz_block_bottom.png',
+  honey_block: 'block/honey_block_side.png',
+  stone_button: 'block/stone.png',
+  oak_button: 'block/oak_planks.png',
+  stone_pressure_plate: 'block/stone.png',
+  oak_pressure_plate: 'block/oak_planks.png',
+  target: 'block/target_side.png',
+  daylight_detector: 'block/daylight_detector_top.png',
+  crafter: 'block/crafter_north.png',
+  blast_furnace: 'block/blast_furnace_front.png',
+  smoker: 'block/smoker_front.png',
+  smithing_table: 'block/smithing_table_front.png',
+  stonecutter: 'block/stonecutter_side.png',
+  grindstone: 'block/grindstone_side.png',
+  enchanting_table: 'block/enchanting_table_side.png'
+};
+
+// escaleras y losas no tienen textura propia: usan la del bloque base
+const STAIRS = {
+  oak_stairs:'oak_planks', spruce_stairs:'spruce_planks', birch_stairs:'birch_planks',
+  jungle_stairs:'jungle_planks', acacia_stairs:'acacia_planks', dark_oak_stairs:'dark_oak_planks',
+  mangrove_stairs:'mangrove_planks', cherry_stairs:'cherry_planks', bamboo_stairs:'bamboo_planks',
+  crimson_stairs:'crimson_planks', warped_stairs:'warped_planks',
+  stone_stairs:'stone', cobblestone_stairs:'cobblestone', mossy_cobblestone_stairs:'mossy_cobblestone',
+  stone_brick_stairs:'stone_bricks', mossy_stone_brick_stairs:'mossy_stone_bricks',
+  andesite_stairs:'andesite', polished_andesite_stairs:'polished_andesite',
+  diorite_stairs:'diorite', polished_diorite_stairs:'polished_diorite',
+  granite_stairs:'granite', polished_granite_stairs:'polished_granite',
+  sandstone_stairs:'sandstone', smooth_sandstone_stairs:'sandstone_top',
+  red_sandstone_stairs:'red_sandstone', smooth_red_sandstone_stairs:'red_sandstone_top',
+  cobbled_deepslate_stairs:'cobbled_deepslate', polished_deepslate_stairs:'polished_deepslate',
+  deepslate_brick_stairs:'deepslate_bricks', deepslate_tile_stairs:'deepslate_tiles',
+  brick_stairs:'bricks', mud_brick_stairs:'mud_bricks',
+  nether_brick_stairs:'nether_bricks', red_nether_brick_stairs:'red_nether_bricks',
+  blackstone_stairs:'blackstone', polished_blackstone_stairs:'polished_blackstone',
+  polished_blackstone_brick_stairs:'polished_blackstone_bricks',
+  quartz_stairs:'quartz_block_side', smooth_quartz_stairs:'quartz_block_bottom',
+  purpur_stairs:'purpur_block', end_stone_brick_stairs:'end_stone_bricks',
+  prismarine_stairs:'prismarine', prismarine_brick_stairs:'prismarine_bricks',
+  dark_prismarine_stairs:'dark_prismarine',
+  oak_slab:'oak_planks', spruce_slab:'spruce_planks', birch_slab:'birch_planks',
+  jungle_slab:'jungle_planks', acacia_slab:'acacia_planks', dark_oak_slab:'dark_oak_planks',
+  mangrove_slab:'mangrove_planks', cherry_slab:'cherry_planks', bamboo_slab:'bamboo_planks',
+  crimson_slab:'crimson_planks', warped_slab:'warped_planks',
+  stone_slab:'stone', cobblestone_slab:'cobblestone', stone_brick_slab:'stone_bricks',
+  cobbled_deepslate_slab:'cobbled_deepslate', deepslate_brick_slab:'deepslate_bricks',
+  andesite_slab:'andesite', diorite_slab:'diorite', granite_slab:'granite',
+  sandstone_slab:'sandstone', nether_brick_slab:'nether_bricks', quartz_slab:'quartz_block_side'
+};
+
+// sin textura plana posible → emoji propio
+const EMOJI = { chest:'📦', trapped_chest:'📦', ender_chest:'🟣', wither_skeleton_skull:'💀' };
+
+function iconSources(id) {
+  const list = [];
+  if (STAIRS[id]) list.push(TEX + 'block/' + STAIRS[id] + '.png');
+  if (SPECIAL[id]) list.push(TEX + SPECIAL[id]);
+  list.push(TEX + 'item/' + id + '.png');
+  list.push(TEX + 'block/' + id + '.png');
+  return list;
+}
+
+// si falla una textura, prueba la siguiente; si fallan todas, muestra un emoji
+function mcErr(img) {
+  const alts = JSON.parse(img.dataset.alts || '[]');
+  if (alts.length) {
+    img.dataset.alts = JSON.stringify(alts.slice(1));
+    img.src = alts[0];
+  } else {
+    const span = document.createElement('span');
+    span.className = 'fallback';
+    span.textContent = img.dataset.emoji || '📦';
+    img.replaceWith(span);
+  }
+}
+
+const DATA = [
+  { name: "Piedras y Tierra", icon: "cobblestone", emoji: "🪨", color: "#7d8590", items: [
+    ["Piedra labrada","cobblestone"],["Piedra","stone"],["Piedra lisa","smooth_stone"],
+    ["Ladrillos de piedra","stone_bricks"],["Ladrillos de piedra musgosos","mossy_stone_bricks"],["Ladrillos de piedra cincelados","chiseled_stone_bricks"],
+    ["Piedra labrada musgosa","mossy_cobblestone"],
+    ["Pizarra profunda","deepslate"],["Pizarra profunda labrada","cobbled_deepslate"],["Pizarra profunda pulida","polished_deepslate"],
+    ["Ladrillos de pizarra profunda","deepslate_bricks"],["Baldosas de pizarra profunda","deepslate_tiles"],
+    ["Andesita","andesite"],["Andesita pulida","polished_andesite"],
+    ["Diorita","diorite"],["Diorita pulida","polished_diorite"],
+    ["Granito","granite"],["Granito pulido","polished_granite"],
+    ["Toba","tuff"],["Toba pulida","polished_tuff"],["Calcita","calcite"],
+    ["Bloque de espeleotema","dripstone_block"],["Espeleotema puntiagudo","pointed_dripstone"],["Grava","gravel"],["Pedernal","flint"],
+    ["Tierra","dirt"],["Bloque de césped","grass_block"],
+    ["Arena","sand"],["Arena roja","red_sand"],
+    ["Arenisca","sandstone"],["Arenisca cortada","cut_sandstone"],["Arenisca lisa","smooth_sandstone"],
+    ["Arenisca roja","red_sandstone"],["Arenisca roja cortada","cut_red_sandstone"],["Arenisca roja lisa","smooth_red_sandstone"],
+    ["Bola de arcilla","clay_ball"],["Arcilla (bloque)","clay"],["Terracota","terracotta"],["Ladrillo (ítem)","brick"],["Ladrillos (bloque)","bricks"],
+    ["Lodo","mud"],["Lodo compactado","packed_mud"],["Ladrillos de lodo","mud_bricks"],["Bloque de musgo","moss_block"],
+    ["Obsidiana","obsidian"],["Obsidiana llorosa","crying_obsidian"],["Hielo","ice"],["Hielo compacto","packed_ice"],["Hielo azul","blue_ice"],
+    ["Bloque de nieve","snow_block"],
+    ["Prismarina","prismarine"],["Ladrillos de prismarina","prismarine_bricks"],["Prismarina oscura","dark_prismarine"],
+    ["Fragmento de prismarina","prismarine_shard"],["Cristales de prismarina","prismarine_crystals"]
+  ]},
+  { name: "Nether y End", icon: "netherrack", emoji: "🔥", color: "#b5442f", items: [
+    ["Piedra del Nether","netherrack"],["Ladrillos del Nether","nether_bricks"],["Ladrillos del Nether rojos","red_nether_bricks"],
+    ["Basalto","basalt"],["Piedra negra","blackstone"],["Piedra negra pulida","polished_blackstone"],["Ladrillos de piedra negra pulida","polished_blackstone_bricks"],
+    ["Arena de almas","soul_sand"],["Tierra de almas","soul_soil"],["Bloque de magma","magma_block"],
+    ["Polvo de piedra luminosa","glowstone_dust"],["Piedra luminosa","glowstone"],["Verruga del Nether","nether_wart"],
+    ["Cuarzo","quartz"],["Bloque de cuarzo","quartz_block"],["Cuarzo liso","smooth_quartz"],["Ladrillos de cuarzo","quartz_bricks"],
+    ["Piedra del End","end_stone"],["Ladrillos del End","end_stone_bricks"],["Bloque de purpur","purpur_block"],
+    ["Fruta chorus","chorus_fruit"],["Caparazón de shulker","shulker_shell"]
+  ]},
+  { name: "Madera", icon: "oak_log", emoji: "🌳", color: "#8a6238", items: [
+    ["Tronco de roble","oak_log"],["Tronco de abeto","spruce_log"],["Tronco de abedul","birch_log"],["Tronco de la selva","jungle_log"],
+    ["Tronco de acacia","acacia_log"],["Tronco de roble oscuro","dark_oak_log"],["Tronco de mangle","mangrove_log"],["Tronco de cerezo","cherry_log"],
+    ["Tallo carmesí","crimson_stem"],["Tallo distorsionado","warped_stem"],["Bloque de bambú","bamboo_block"],
+    ["Tablas de roble","oak_planks"],["Tablas de abeto","spruce_planks"],["Tablas de abedul","birch_planks"],["Tablas de la selva","jungle_planks"],
+    ["Tablas de acacia","acacia_planks"],["Tablas de roble oscuro","dark_oak_planks"],["Tablas de mangle","mangrove_planks"],["Tablas de cerezo","cherry_planks"],
+    ["Tablas carmesí","crimson_planks"],["Tablas distorsionadas","warped_planks"],["Tablas de bambú","bamboo_planks"],
+    ["Palo","stick"],["Bambú","bamboo"],["Retoño de roble","oak_sapling"],["Carbón vegetal","charcoal"]
+  ]},
+  { name: "Escaleras", icon: "stone_brick_stairs", emoji: "🪜", color: "#7b6c54", items: [
+    ["Escaleras de roble","oak_stairs"],["Escaleras de abeto","spruce_stairs"],["Escaleras de abedul","birch_stairs"],["Escaleras de la selva","jungle_stairs"],
+    ["Escaleras de acacia","acacia_stairs"],["Escaleras de roble oscuro","dark_oak_stairs"],["Escaleras de mangle","mangrove_stairs"],["Escaleras de cerezo","cherry_stairs"],
+    ["Escaleras de bambú","bamboo_stairs"],["Escaleras carmesí","crimson_stairs"],["Escaleras distorsionadas","warped_stairs"],
+    ["Escaleras de piedra","stone_stairs"],["Escaleras de piedra labrada","cobblestone_stairs"],["Escaleras de piedra labrada musgosa","mossy_cobblestone_stairs"],
+    ["Escaleras de ladrillos de piedra","stone_brick_stairs"],["Escaleras de ladrillos musgosos","mossy_stone_brick_stairs"],
+    ["Escaleras de andesita","andesite_stairs"],["Escaleras de andesita pulida","polished_andesite_stairs"],
+    ["Escaleras de diorita","diorite_stairs"],["Escaleras de diorita pulida","polished_diorite_stairs"],
+    ["Escaleras de granito","granite_stairs"],["Escaleras de granito pulido","polished_granite_stairs"],
+    ["Escaleras de arenisca","sandstone_stairs"],["Escaleras de arenisca lisa","smooth_sandstone_stairs"],
+    ["Escaleras de arenisca roja","red_sandstone_stairs"],["Escaleras de arenisca roja lisa","smooth_red_sandstone_stairs"],
+    ["Escaleras de pizarra labrada","cobbled_deepslate_stairs"],["Escaleras de pizarra pulida","polished_deepslate_stairs"],
+    ["Escaleras de ladrillos de pizarra","deepslate_brick_stairs"],["Escaleras de baldosas de pizarra","deepslate_tile_stairs"],
+    ["Escaleras de ladrillos","brick_stairs"],["Escaleras de ladrillos de lodo","mud_brick_stairs"],
+    ["Escaleras de ladrillos del Nether","nether_brick_stairs"],["Escaleras de ladrillos del Nether rojos","red_nether_brick_stairs"],
+    ["Escaleras de piedra negra","blackstone_stairs"],["Escaleras de piedra negra pulida","polished_blackstone_stairs"],
+    ["Escaleras de ladrillos de piedra negra","polished_blackstone_brick_stairs"],
+    ["Escaleras de cuarzo","quartz_stairs"],["Escaleras de cuarzo liso","smooth_quartz_stairs"],
+    ["Escaleras de purpur","purpur_stairs"],["Escaleras de ladrillos del End","end_stone_brick_stairs"],
+    ["Escaleras de prismarina","prismarine_stairs"],["Escaleras de ladrillos de prismarina","prismarine_brick_stairs"],["Escaleras de prismarina oscura","dark_prismarine_stairs"]
+  ]},
+  { name: "Losas", icon: "stone_slab", emoji: "🧱", color: "#6f8296", items: [
+    ["Losa de piedra","stone_slab"],
+    ["Losa de roble","oak_slab"],["Losa de abeto","spruce_slab"],["Losa de abedul","birch_slab"],["Losa de la selva","jungle_slab"],
+    ["Losa de acacia","acacia_slab"],["Losa de roble oscuro","dark_oak_slab"],["Losa de mangle","mangrove_slab"],["Losa de cerezo","cherry_slab"],
+    ["Losa de bambú","bamboo_slab"],["Losa carmesí","crimson_slab"],["Losa distorsionada","warped_slab"],
+    ["Losa de piedra labrada","cobblestone_slab"],["Losa de ladrillos de piedra","stone_brick_slab"],
+    ["Losa de pizarra labrada","cobbled_deepslate_slab"],["Losa de ladrillos de pizarra","deepslate_brick_slab"],
+    ["Losa de andesita","andesite_slab"],["Losa de diorita","diorite_slab"],["Losa de granito","granite_slab"],
+    ["Losa de arenisca","sandstone_slab"],["Losa de ladrillos del Nether","nether_brick_slab"],["Losa de cuarzo","quartz_slab"]
+  ]},
+  { name: "Minerales y Metales", icon: "diamond", emoji: "💎", color: "#2e97a5", items: [
+    ["Carbón","coal"],["Bloque de carbón","coal_block"],
+    ["Hierro en bruto","raw_iron"],["Lingote de hierro","iron_ingot"],["Pepita de hierro","iron_nugget"],["Bloque de hierro","iron_block"],
+    ["Oro en bruto","raw_gold"],["Lingote de oro","gold_ingot"],["Pepita de oro","gold_nugget"],["Bloque de oro","gold_block"],
+    ["Cobre en bruto","raw_copper"],["Lingote de cobre","copper_ingot"],["Bloque de cobre","copper_block"],
+    ["Cobre cortado","cut_copper"],
+    ["Diamante","diamond"],["Bloque de diamante","diamond_block"],["Esmeralda","emerald"],["Bloque de esmeralda","emerald_block"],
+    ["Lapislázuli","lapis_lazuli"],["Bloque de lapislázuli","lapis_block"],
+    ["Polvo de redstone","redstone"],["Bloque de redstone","redstone_block"],
+    ["Fragmento de amatista","amethyst_shard"],["Bloque de amatista","amethyst_block"]
+  ]},
+  { name: "Drops de Mobs", icon: "bone", emoji: "🧟", color: "#4f8a3d", items: [
+    ["Carne podrida","rotten_flesh"],["Hueso","bone"],["Polvo de hueso","bone_meal"],["Bloque de hueso","bone_block"],
+    ["Pólvora","gunpowder"],["Hilo","string"],["Ojo de araña","spider_eye"],["Ojo de araña fermentado","fermented_spider_eye"],
+    ["Flecha","arrow"],["Pluma","feather"],["Cuero","leather"],["Saco de tinta","ink_sac"],["Saco de tinta luminosa","glow_ink_sac"],
+    ["Bola de slime","slime_ball"],["Bloque de slime","slime_block"],
+    ["Vara de blaze","blaze_rod"],["Polvo de blaze","blaze_powder"],["Crema de magma","magma_cream"],
+    ["Cráneo de esqueleto wither","wither_skeleton_skull"],
+    ["Panal","honeycomb"],["Bloque de panal","honeycomb_block"],["Bloque de miel","honey_block"]
+  ]},
+  { name: "Comida y Farming", icon: "golden_carrot", emoji: "🍖", color: "#c8862f", items: [
+    ["Trigo","wheat"],["Semillas de trigo","wheat_seeds"],["Fardo de heno","hay_block"],["Pan","bread"],
+    ["Zanahoria","carrot"],["Zanahoria dorada","golden_carrot"],["Papa","potato"],["Papa asada","baked_potato"],
+    ["Remolacha","beetroot"],["Semillas de remolacha","beetroot_seeds"],
+    ["Rodaja de sandía","melon_slice"],["Sandía (bloque)","melon"],
+    ["Calabaza","pumpkin"],["Calabaza tallada","carved_pumpkin"],["Semillas de calabaza","pumpkin_seeds"],
+    ["Caña de azúcar","sugar_cane"],["Azúcar","sugar"],["Cactus","cactus"],["Semillas de cacao","cocoa_beans"],
+    ["Manzana","apple"],["Manzana dorada","golden_apple"],["Bayas dulces","sweet_berries"],["Bayas luminosas","glow_berries"],
+    ["Alga","kelp"],["Alga seca","dried_kelp"],["Bloque de alga seca","dried_kelp_block"],
+    ["Champiñón café","brown_mushroom"],["Champiñón rojo","red_mushroom"],
+    ["Bacalao crudo","cod"],["Bacalao cocido","cooked_cod"],["Salmón crudo","salmon"],["Salmón cocido","cooked_salmon"],
+    ["Carne de res cruda","beef"],["Filete","cooked_beef"],["Chuleta de cerdo cruda","porkchop"],["Chuleta de cerdo cocida","cooked_porkchop"],
+    ["Pollo crudo","chicken"],["Pollo cocido","cooked_chicken"],["Cordero crudo","mutton"],["Cordero cocido","cooked_mutton"],
+    ["Pastel de calabaza","pumpkin_pie"]
+  ]},
+  { name: "Redstone y Utilidad", icon: "redstone", emoji: "⚙️", color: "#a53f50", items: [
+    ["Antorcha de redstone","redstone_torch"],["Repetidor","repeater"],["Comparador","comparator"],["Observador","observer"],
+    ["Pistón","piston"],["Pistón pegajoso","sticky_piston"],["Tolva","hopper"],["Soltador","dropper"],["Dispensador","dispenser"],
+    ["Palanca","lever"],["Botón de piedra","stone_button"],["Botón de roble","oak_button"],
+    ["Placa de presión (piedra)","stone_pressure_plate"],["Placa de presión (madera)","oak_pressure_plate"],
+    ["Lámpara de redstone","redstone_lamp"],["Crafteador","crafter"],
+    ["Riel","rail"],["Riel propulsor","powered_rail"],["Riel detector","detector_rail"],["TNT","tnt"],
+    ["Antorcha","torch"],["Antorcha de almas","soul_torch"],["Farol","lantern"],["Farol marino","sea_lantern"],["Champilámpara","shroomlight"],
+    ["Vidrio","glass"],["Panel de vidrio","glass_pane"],["Botella de vidrio","glass_bottle"],["Lana blanca","white_wool"],["Papel","paper"],["Libro","book"],["Librero","bookshelf"],
+    ["Escalera de mano","ladder"],["Andamio","scaffolding"],
+    ["Cofre","chest"],["Cofre trampa","trapped_chest"],["Cofre de ender","ender_chest"],["Barril","barrel"],
+    ["Horno","furnace"],["Alto horno","blast_furnace"],["Ahumador","smoker"],
+    ["Mesa de herrería","smithing_table"],["Cortapiedras","stonecutter"],["Afiladora","grindstone"],["Yunque","anvil"],
+    ["Mesa de encantamientos","enchanting_table"],["Fogata","campfire"],
+    ["Marco","item_frame"],["Etiqueta","name_tag"]
+  ]}
+];
+
+const container = document.getElementById('categories');
+const chipsBar = document.getElementById('chips');
+let counter = 0;
+
+function iconHtml(id, catEmoji) {
+  const srcs = iconSources(id);
+  const first = srcs[0];
+  const alts = JSON.stringify(srcs.slice(1)).replace(/"/g, '&quot;');
+  const emoji = EMOJI[id] || catEmoji;
+  return `<span class="icon-slot"><img src="${first}" data-alts="${alts}" data-emoji="${emoji}" onerror="mcErr(this)" loading="lazy" alt=""></span>`;
+}
+
+DATA.forEach((cat, ci) => {
+  const chip = document.createElement('div');
+  chip.className = 'stat-chip';
+  chip.dataset.cat = ci;
+  chip.innerHTML = `<span class="dot" style="background:${cat.color}"></span><b>${cat.name}</b> · ${cat.items.length}`;
+  chipsBar.appendChild(chip);
+
+  const sec = document.createElement('section');
+  sec.className = 'category';
+  sec.dataset.cat = ci;
+  sec.style.setProperty('--cat-color', cat.color);
+  const itemsHtml = cat.items.map(([name, id]) => {
+    counter++;
+    return `<div class="item" data-search="${(name + ' ' + id).toLowerCase()}">
+      ${iconHtml(id, cat.emoji)}
+      <div class="info"><div class="name">${name}</div><span class="id">#${String(counter).padStart(3,'0')} · minecraft:${id}</span></div>
+    </div>`;
+  }).join('');
+  sec.innerHTML = `<div class="panel">
+    <div class="cat-header">
+      <span class="cat-icon">${iconHtml(cat.icon, cat.emoji).match(/<img.*?>/)[0]}</span>
+      <div class="cat-title">${cat.name}</div>
+      <div class="cat-count">${cat.items.length} ítems</div>
+    </div>
+    <div class="grid">${itemsHtml}</div>
+  </div>`;
+  container.appendChild(sec);
+});
+
+// verificación del total en el chip "Todos"
+const total = DATA.reduce((s, c) => s + c.items.length, 0);
+document.querySelector('[data-cat="all"]').innerHTML = `<b>Todos</b> · ${total}`;
+
+chipsBar.addEventListener('click', e => {
+  const chip = e.target.closest('.stat-chip');
+  if (!chip) return;
+  chipsBar.querySelectorAll('.stat-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  const cat = chip.dataset.cat;
+  document.querySelectorAll('.category').forEach(sec => {
+    sec.classList.toggle('hidden', cat !== 'all' && sec.dataset.cat !== cat);
+  });
+  applySearch();
+});
+
+const searchInput = document.getElementById('search');
+const noResults = document.getElementById('noResults');
+searchInput.addEventListener('input', applySearch);
+
+function applySearch() {
+  const q = searchInput.value.trim().toLowerCase();
+  let visible = 0;
+  document.querySelectorAll('.category:not(.hidden)').forEach(sec => {
+    let catVisible = 0;
+    sec.querySelectorAll('.item').forEach(it => {
+      const match = !q || it.dataset.search.includes(q);
+      it.classList.toggle('hidden', !match);
+      if (match) catVisible++;
+    });
+    sec.style.display = catVisible ? '' : 'none';
+    visible += catVisible;
+  });
+  noResults.style.display = visible ? 'none' : 'block';
+}
+</script>
+</body>
+</html>
