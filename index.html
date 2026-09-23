@@ -181,6 +181,47 @@
     margin-top: 2px;
   }
 
+  /* toggle "bloques a reemplazar" */
+  .replace-toggle {
+    font-family: 'VT323', monospace;
+    font-size: 1.15rem;
+    background: #7a5a2a;
+    border: 2px solid #000;
+    box-shadow: inset 0 3px 0 #c58f45, inset 0 -4px 0 #4d3a1a;
+    color: #ffe6b0;
+    text-shadow: 2px 2px 0 #3a2a12;
+    padding: 8px 18px 10px;
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: transform .06s;
+  }
+  .replace-toggle:hover { background: #916b34; }
+  .replace-toggle:active { transform: translateY(2px); }
+  .replace-toggle.active {
+    background: #e8a33d; color: #3a2a12; text-shadow: none;
+    box-shadow: inset 0 3px 0 #ffd27a, inset 0 -4px 0 #b57a20;
+  }
+  .toggle-row { display: flex; justify-content: center; margin: 4px 0 2px; }
+
+  /* tarjeta marcada como "a reemplazar" */
+  .item.flagged { box-shadow: inset 4px 0 0 #e8a33d; }
+  .item.flagged::after {
+    content: '⇄'; position: absolute; top: 1px; right: 5px;
+    font-size: .95rem; color: #e8a33d; text-shadow: 1px 1px 0 #000;
+  }
+  .swap {
+    flex-basis: 100%; display: none; align-items: center; gap: 9px;
+    margin-top: 7px; padding-top: 7px; border-top: 1px dashed #6b6b6b;
+  }
+  .swap .icon-slot { width: 30px; height: 30px; min-width: 30px; }
+  .swap .icon-slot img { width: 22px; height: 22px; }
+  .swap-info { min-width: 0; line-height: 1.05; }
+  .swap-arrow { font-family: 'JetBrains Mono', monospace; font-size: .52rem; color: #6a5a3a; text-transform: uppercase; letter-spacing: .5px; }
+  .swap-name { font-size: 1.05rem; color: #6b4a12; }
+  .swap-reason { display: block; font-size: .82rem; color: #7a6a55; margin-top: 1px; }
+  body.replace-mode .item.flagged .swap { display: flex; }
+
   .hidden { display: none !important; }
 
   .no-results {
@@ -216,6 +257,10 @@
 
   <div class="stats-bar" id="chips">
     <div class="stat-chip active" data-cat="all"><b>Todos</b> · 305</div>
+  </div>
+
+  <div class="toggle-row">
+    <div class="replace-toggle" id="replaceToggle">🔄 <b>Bloques a reemplazar</b> · <span id="replaceCount">0</span></div>
   </div>
 
   <div class="search-box">
@@ -280,7 +325,15 @@ const SPECIAL = {
   smithing_table: 'block/smithing_table_front.png',
   stonecutter: 'block/stonecutter_side.png',
   grindstone: 'block/grindstone_side.png',
-  enchanting_table: 'block/enchanting_table_side.png'
+  enchanting_table: 'block/enchanting_table_side.png',
+  ochre_froglight: 'block/ochre_froglight_side.png',
+  chiseled_bookshelf: 'block/chiseled_bookshelf_side.png',
+  composter: 'block/composter_side.png',
+  sponge: 'block/sponge.png',
+  sculk: 'block/sculk.png',
+  tinted_glass: 'block/tinted_glass.png',
+  iron_bars: 'block/iron_bars.png',
+  bell: 'block/bell_side.png'
 };
 
 // escaleras y losas no tienen textura propia: usan la del bloque base
@@ -318,6 +371,21 @@ const STAIRS = {
 
 // sin textura plana posible → emoji propio
 const EMOJI = { chest:'📦', trapped_chest:'📦', ender_chest:'🟣', wither_skeleton_skull:'💀' };
+
+// Bloques que NO valen un filtro de tolva en un almacén (puro deco / dead-end de
+// survival) → reemplazo más funcional.  Formato: id: [motivo, "Nombre nuevo", nuevo_id]
+const REPLACE = {
+  red_sandstone:            ["Solo del badlands · puro deco", "Esponja", "sponge"],
+  cut_red_sandstone:        ["Variante deco redundante", "Bloque de sculk", "sculk"],
+  smooth_red_sandstone:     ["Variante deco redundante", "Farola ocre", "ochre_froglight"],
+  red_sandstone_stairs:     ["Escalera deco del badlands", "Campana", "bell"],
+  smooth_red_sandstone_stairs:["Escalera deco casi sin uso", "Pararrayos", "lightning_rod"],
+  dark_prismarine:          ["Nicho · gasta un filtro", "Vidrio tintado", "tinted_glass"],
+  dark_prismarine_stairs:   ["Escalera nicho", "Compostador", "composter"],
+  polished_tuff:            ["Deco 1.21 poco usada", "Estantería cincelada", "chiseled_bookshelf"],
+  deepslate_tiles:          ["Redundante con ladrillos de pizarra", "Cadena", "chain"],
+  calcite:                  ["Puro deco de geoda", "Barrotes de hierro", "iron_bars"]
+};
 
 function iconSources(id) {
   const list = [];
@@ -492,9 +560,13 @@ DATA.forEach((cat, ci) => {
   sec.style.setProperty('--cat-color', cat.color);
   const itemsHtml = cat.items.map(([name, id]) => {
     counter++;
-    return `<div class="item" data-search="${(name + ' ' + id).toLowerCase()}">
+    const rep = REPLACE[id];
+    const flag = rep ? ' flagged' : '';
+    const swap = rep ? `<div class="swap">${iconHtml(rep[2], cat.emoji)}<div class="swap-info"><span class="swap-arrow">reemplazar por</span><div class="swap-name">${rep[1]}</div><span class="swap-reason">${rep[0]}</span></div></div>` : '';
+    return `<div class="item${flag}" data-search="${(name + ' ' + id).toLowerCase()}">
       ${iconHtml(id, cat.emoji)}
       <div class="info"><div class="name">${name}</div><span class="id">#${String(counter).padStart(3,'0')} · minecraft:${id}</span></div>
+      ${swap}
     </div>`;
   }).join('');
   sec.innerHTML = `<div class="panel">
@@ -512,33 +584,50 @@ DATA.forEach((cat, ci) => {
 const total = DATA.reduce((s, c) => s + c.items.length, 0);
 document.querySelector('[data-cat="all"]').innerHTML = `<b>Todos</b> · ${total}`;
 
+const searchInput = document.getElementById('search');
+const noResults = document.getElementById('noResults');
+const replaceToggle = document.getElementById('replaceToggle');
+let activeCat = 'all';
+let replaceMode = false;
+
+// cuántos ítems están marcados para reemplazo
+document.getElementById('replaceCount').textContent = Object.keys(REPLACE).length;
+
 chipsBar.addEventListener('click', e => {
   const chip = e.target.closest('.stat-chip');
   if (!chip) return;
   chipsBar.querySelectorAll('.stat-chip').forEach(c => c.classList.remove('active'));
   chip.classList.add('active');
-  const cat = chip.dataset.cat;
-  document.querySelectorAll('.category').forEach(sec => {
-    sec.classList.toggle('hidden', cat !== 'all' && sec.dataset.cat !== cat);
-  });
-  applySearch();
+  activeCat = chip.dataset.cat;
+  applyFilter();
 });
 
-const searchInput = document.getElementById('search');
-const noResults = document.getElementById('noResults');
-searchInput.addEventListener('input', applySearch);
+replaceToggle.addEventListener('click', () => {
+  replaceMode = !replaceMode;
+  replaceToggle.classList.toggle('active', replaceMode);
+  document.body.classList.toggle('replace-mode', replaceMode);
+  applyFilter();
+});
 
-function applySearch() {
+searchInput.addEventListener('input', applyFilter);
+
+function applyFilter() {
   const q = searchInput.value.trim().toLowerCase();
   let visible = 0;
-  document.querySelectorAll('.category:not(.hidden)').forEach(sec => {
+  document.querySelectorAll('.category').forEach(sec => {
+    // en modo reemplazo ignoramos el filtro de categoría (mostramos todo lo marcado)
+    const catMatch = replaceMode || activeCat === 'all' || sec.dataset.cat === activeCat;
     let catVisible = 0;
-    sec.querySelectorAll('.item').forEach(it => {
-      const match = !q || it.dataset.search.includes(q);
-      it.classList.toggle('hidden', !match);
-      if (match) catVisible++;
-    });
-    sec.style.display = catVisible ? '' : 'none';
+    if (catMatch) {
+      sec.querySelectorAll('.item').forEach(it => {
+        const flagOk = !replaceMode || it.classList.contains('flagged');
+        const searchOk = !q || it.dataset.search.includes(q);
+        const show = flagOk && searchOk;
+        it.classList.toggle('hidden', !show);
+        if (show) catVisible++;
+      });
+    }
+    sec.style.display = (catMatch && catVisible) ? '' : 'none';
     visible += catVisible;
   });
   noResults.style.display = visible ? 'none' : 'block';
