@@ -270,6 +270,7 @@
   <div class="toggle-row">
     <div class="replace-toggle" id="markToggle">✏️ <b>Marcar bloques</b></div>
     <div class="replace-toggle" id="replaceToggle">🔄 <b>Ver marcados</b> · <span id="replaceCount">0</span></div>
+    <div class="replace-toggle" id="copyMarks">📋 Copiar lista</div>
     <div class="replace-toggle danger" id="clearMarks">🗑️ Limpiar</div>
   </div>
   <p class="mark-hint" id="markHint">👆 Tocá los bloques que quieras reemplazar. Se guardan en este navegador.</p>
@@ -397,6 +398,10 @@ const REPLACE = {
   deepslate_tiles:          ["Redundante con ladrillos de pizarra", "Cadena", "chain"],
   calcite:                  ["Puro deco de geoda", "Barrotes de hierro", "iron_bars"]
 };
+
+// Lista FIJA de bloques marcados para reemplazar — la ven TODOS los que abren la web.
+// (Los reemplazará después por bloques naturales / no crafteables / útiles.)
+const DEFAULT_MARKS = Object.keys(REPLACE);
 
 function iconSources(id) {
   const list = [];
@@ -599,6 +604,7 @@ const noResults = document.getElementById('noResults');
 const replaceToggle = document.getElementById('replaceToggle');
 const markToggle = document.getElementById('markToggle');
 const clearMarks = document.getElementById('clearMarks');
+const copyMarks = document.getElementById('copyMarks');
 const replaceCount = document.getElementById('replaceCount');
 let activeCat = 'all';
 let replaceMode = false;
@@ -607,8 +613,8 @@ let markMode = false;
 // ---- marcados: se guardan en este navegador (localStorage) ----
 const STORE = 'almacen_marcados';
 function loadMarks() {
-  try { return new Set(JSON.parse(localStorage.getItem(STORE)) || Object.keys(REPLACE)); }
-  catch { return new Set(Object.keys(REPLACE)); }
+  try { return new Set(JSON.parse(localStorage.getItem(STORE)) || DEFAULT_MARKS); }
+  catch { return new Set(DEFAULT_MARKS); }
 }
 let marked = loadMarks();
 
@@ -658,6 +664,19 @@ replaceToggle.addEventListener('click', () => {
   replaceToggle.classList.toggle('active', replaceMode);
   document.body.classList.toggle('replace-mode', replaceMode);
   applyFilter();
+});
+
+// copiar la lista de marcados (JSON) para pegársela a quien la fije en el código
+copyMarks.addEventListener('click', async () => {
+  const list = [...marked];
+  const txt = JSON.stringify(list);
+  try {
+    await navigator.clipboard.writeText(txt);
+    alert(`✅ ${list.size ?? list.length} bloques copiados al portapapeles.\n\nPégaselos a Claude para dejarlos fijos en el código.`);
+  } catch {
+    // fallback si el navegador bloquea el portapapeles
+    prompt('Copiá esta lista (Cmd+C) y pégasela a Claude:', txt);
+  }
 });
 
 clearMarks.addEventListener('click', () => {
