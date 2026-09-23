@@ -400,8 +400,21 @@ const REPLACE = {
 };
 
 // Lista FIJA de bloques marcados para reemplazar — la ven TODOS los que abren la web.
-// (Los reemplazará después por bloques naturales / no crafteables / útiles.)
-const DEFAULT_MARKS = Object.keys(REPLACE);
+// (Se reemplazarán después por bloques naturales / no crafteables / útiles.)
+const DEFAULT_MARKS = [
+  "red_sandstone","red_sandstone_stairs","smooth_red_sandstone_stairs","red_sand","cut_red_sandstone",
+  "sandstone","smooth_red_sandstone","polished_tuff","bricks","packed_mud","mud_bricks",
+  "prismarine","prismarine_bricks","dark_prismarine","prismarine_shard","prismarine_crystals",
+  "red_nether_bricks","nether_wart","quartz_bricks","purpur_block","end_stone_bricks","glowstone_dust",
+  "bamboo_planks","polished_granite_stairs","granite_stairs","sandstone_stairs","smooth_sandstone_stairs",
+  "bamboo_stairs","red_nether_brick_stairs","crimson_stairs","warped_stairs","brick_stairs","mud_brick_stairs",
+  "purpur_stairs","prismarine_stairs","prismarine_brick_stairs","end_stone_brick_stairs","dark_prismarine_stairs",
+  "polished_andesite_stairs","polished_diorite_stairs","polished_diorite","polished_andesite",
+  "polished_blackstone_stairs","bamboo_slab","polished_blackstone_brick_stairs","granite_slab","sandstone_slab",
+  "diamond_block","emerald_block","redstone_block","lapis_block","cut_copper","gold_block","copper_block",
+  "sea_lantern","enchanting_table","anvil","ender_chest","crafter","trapped_chest","grindstone","stonecutter",
+  "smithing_table","smoker","blast_furnace","furnace","barrel"
+];
 
 function iconSources(id) {
   const list = [];
