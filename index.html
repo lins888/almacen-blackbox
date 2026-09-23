@@ -260,6 +260,7 @@
       <img src="https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21.4/assets/minecraft/textures/block/crafting_table_front.png" alt="logo">
     </div>
     <p class="subtitle"><b>305 ítems esenciales</b> · todos stackean a 64 · BlackBox Server</p>
+    <p class="subtitle small"><b>249 definidos</b> · 56 pendientes por definir · decidido con 467 h de estadísticas del servidor</p>
     <p class="subtitle small">Excluidos: perlas de ender, ojos de ender, netherita, Estrella del Nether, huevos, bolas de nieve, letreros (stack 16) · cubetas, herramientas, pociones (stack 1)</p>
   </header>
 
@@ -269,7 +270,9 @@
 
   <div class="toggle-row">
     <div class="replace-toggle" id="markToggle">✏️ <b>Marcar bloques</b></div>
-    <div class="replace-toggle" id="replaceToggle">🔄 <b>Ver marcados</b> · <span id="replaceCount">0</span></div>
+    <div class="replace-toggle active" id="viewAll">📚 <b>Todo</b> · <span id="cAll">0</span></div>
+    <div class="replace-toggle" id="viewKeep">✅ <b>Solo lo que se guarda</b> · <span id="cKeep">0</span></div>
+    <div class="replace-toggle" id="viewPending">🕗 <b>Pendientes por definir</b> · <span id="replaceCount">0</span></div>
     <div class="replace-toggle" id="copyMarks">📋 Copiar lista</div>
     <div class="replace-toggle danger" id="clearMarks">🗑️ Limpiar</div>
   </div>
@@ -387,33 +390,79 @@ const EMOJI = { chest:'📦', trapped_chest:'📦', ender_chest:'🟣', wither_s
 // Bloques que NO valen un filtro de tolva en un almacén (puro deco / dead-end de
 // survival) → reemplazo más funcional.  Formato: id: [motivo, "Nombre nuevo", nuevo_id]
 const REPLACE = {
-  red_sandstone:            ["Solo del badlands · puro deco", "Esponja", "sponge"],
-  cut_red_sandstone:        ["Variante deco redundante", "Bloque de sculk", "sculk"],
-  smooth_red_sandstone:     ["Variante deco redundante", "Farola ocre", "ochre_froglight"],
-  red_sandstone_stairs:     ["Escalera deco del badlands", "Campana", "bell"],
-  smooth_red_sandstone_stairs:["Escalera deco casi sin uso", "Pararrayos", "lightning_rod"],
-  dark_prismarine:          ["Nicho · gasta un filtro", "Vidrio tintado", "tinted_glass"],
-  dark_prismarine_stairs:   ["Escalera nicho", "Compostador", "composter"],
-  polished_tuff:            ["Deco 1.21 poco usada", "Estantería cincelada", "chiseled_bookshelf"],
-  deepslate_tiles:          ["Redundante con ladrillos de pizarra", "Cadena", "chain"],
-  calcite:                  ["Puro deco de geoda", "Barrotes de hierro", "iron_bars"]
+  red_sandstone:                     ["Cero usos en 467 h", "Bloque de coral tubo", "tube_coral_block"],
+  red_sand:                          ["Cero usos · ya tienen arena normal", "Bloque de coral cerebro", "brain_coral_block"],
+  cut_red_sandstone:                 ["Cero usos · variante deco redundante", "Bloque de coral burbuja", "bubble_coral_block"],
+  sandstone:                         ["115 usos, pero se craftea de arena ya almacenada", "Bloque de coral fuego", "fire_coral_block"],
+  smooth_red_sandstone:              ["Cero usos en 467 h", "Bloque de coral cuerno", "horn_coral_block"],
+  polished_tuff:                     ["15 usos · se corta de toba ya almacenada", "Bloque de champiñón rojo", "red_mushroom_block"],
+  bricks:                            ["2 usos · se craftea de ladrillo ya almacenado", "Bloque de champiñón café", "brown_mushroom_block"],
+  packed_mud:                        ["Cero usos · lodo + trigo", "Tallo de champiñón", "mushroom_stem"],
+  mud_bricks:                        ["Cero usos · derivado de lodo compactado", "Podzol", "podzol"],
+  prismarine:                        ["Cero usos · se craftea de fragmentos", "Micelio", "mycelium"],
+  prismarine_bricks:                 ["Cero usos · derivado de fragmentos", "Tierra con raíces", "rooted_dirt"],
+  dark_prismarine:                   ["Cero usos · derivado + tinta", "Azalea", "azalea"],
+  prismarine_shard:                  ["Cero usos pese a ser natural", "Azalea florecida", "flowering_azalea"],
+  prismarine_crystals:               ["5 usos en 467 h", "Hoja de gotera grande", "big_dripleaf"],
+  polished_diorite:                  ["957 usos, pero se corta de diorita en el cortapiedras", "Hoja de gotera pequeña", "small_dripleaf"],
+  polished_andesite:                 ["519 usos · misma lógica: se corta de andesita", "Flor de esporas", "spore_blossom"],
+  red_nether_bricks:                 ["Cero usos · verruga + ladrillo", "Nylium carmesí", "crimson_nylium"],
+  quartz_bricks:                     ["Cero usos · se craftea de bloque de cuarzo", "Nylium distorsionado", "warped_nylium"],
+  purpur_block:                      ["73 usos · se craftea de fruta chorus", "Bloque de verruga distorsionada", "warped_wart_block"],
+  end_stone_bricks:                  ["705 usos, pero salen 4 de 4 end stone ya almacenada", "Enredadera retorcida", "twisting_vines"],
+  red_sandstone_stairs:              ["Cero usos · el cortapiedras las hace al instante", "Tronco de roble pálido", "pale_oak_log"],
+  smooth_red_sandstone_stairs:       ["Cero usos en 467 h", "Roble pelado", "stripped_oak_log"],
+  polished_granite_stairs:           ["Cero usos · se cortan de granito", "Abeto pelado", "stripped_spruce_log"],
+  granite_stairs:                    ["Cero usos · se cortan de granito", "Abedul pelado", "stripped_birch_log"],
+  sandstone_stairs:                  ["Cero usos · se cortan de arenisca", "Selva pelado", "stripped_jungle_log"],
+  smooth_sandstone_stairs:           ["Cero usos · se cortan de arenisca lisa", "Acacia pelada", "stripped_acacia_log"],
+  bamboo_stairs:                     ["Cero usos · tablas de bambú", "Roble oscuro pelado", "stripped_dark_oak_log"],
+  red_nether_brick_stairs:           ["Cero usos en 467 h", "Mangle pelado", "stripped_mangrove_log"],
+  crimson_stairs:                    ["Cero usos · tablas carmesí", "Cerezo pelado", "stripped_cherry_log"],
+  warped_stairs:                     ["Cero usos · tablas distorsionadas", "Roble pálido pelado", "stripped_pale_oak_log"],
+  brick_stairs:                      ["Cero usos · se cortan de ladrillos", "Tallo carmesí pelado", "stripped_crimson_stem"],
+  mud_brick_stairs:                  ["Cero usos · se cortan de ladrillos de lodo", "Tallo distorsionado pelado", "stripped_warped_stem"],
+  purpur_stairs:                     ["4 usos · se cortan de purpur", "Hojas de roble", "oak_leaves"],
+  prismarine_stairs:                 ["Cero usos · se cortan de prismarina", "Hojas de abeto", "spruce_leaves"],
+  prismarine_brick_stairs:           ["Cero usos en 467 h", "Hojas de abedul", "birch_leaves"],
+  end_stone_brick_stairs:            ["Cero usos · se cortan de ladrillos del End", "Hojas de la selva", "jungle_leaves"],
+  dark_prismarine_stairs:            ["Cero usos en 467 h", "Hojas de acacia", "acacia_leaves"],
+  polished_andesite_stairs:          ["22 usos · se cortan de andesita pulida", "Hojas de roble oscuro", "dark_oak_leaves"],
+  polished_diorite_stairs:           ["Cero usos · se cortan de diorita pulida", "Hojas de cerezo", "cherry_leaves"],
+  polished_blackstone_stairs:        ["Cero usos · se cortan de piedra negra pulida", "Hojas de mangle", "mangrove_leaves"],
+  polished_blackstone_brick_stairs:  ["5 usos · se cortan del bloque base", "Hojas de roble pálido", "pale_oak_leaves"],
+  diamond_block:                     ["46 usos · diamante comprimido, 1 craft", "Cobre expuesto", "exposed_copper"],
+  emerald_block:                     ["Cero usos · esmeralda comprimida", "Cobre desgastado", "weathered_copper"],
+  redstone_block:                    ["35 usos · redstone comprimida", "Cobre oxidado", "oxidized_copper"],
+  lapis_block:                       ["35 usos · lapislázuli comprimido", "Bloque de sculk", "sculk"],
+  cut_copper:                        ["Cero usos · se corta de bloque de cobre", "Vena de sculk", "sculk_vein"],
+  gold_block:                        ["95 usos · lingotes comprimidos", "Catalizador de sculk", "sculk_catalyst"],
+  copper_block:                      ["Cero usos · lingotes comprimidos", "Bloque de musgo pálido", "pale_moss_block"],
+  sea_lantern:                       ["2 usos · se craftea de prismarina", "Farola ocre", "ochre_froglight"],
+  enchanting_table:                  ["11 usos · se craftea 1 vez y queda puesta", "Farola verdosa", "verdant_froglight"],
+  anvil:                             ["44 usos · 31 lingotes, se craftea al momento", "Farola perlada", "pearlescent_froglight"],
+  stonecutter:                       ["83 usos · 1 hierro + 3 piedra", "Liquen luminoso", "glow_lichen"],
+  smithing_table:                    ["10 usos · 2 hierro + 4 tablas", "Raíces colgantes", "hanging_roots"],
+  smoker:                            ["41 usos · horno + 4 troncos", "Enredadera", "vine"],
+  furnace:                           ["532 usos, pero son 8 piedras labradas que sobran", "Nenúfar", "lily_pad"],
+  barrel:                            ["3 usos · 6 tablas + 2 losas", "Enredadera llorosa", "weeping_vines"]
 };
 
 // Lista FIJA de bloques marcados para reemplazar — la ven TODOS los que abren la web.
 // (Se reemplazarán después por bloques naturales / no crafteables / útiles.)
 const DEFAULT_MARKS = [
   "red_sandstone","red_sandstone_stairs","smooth_red_sandstone_stairs","red_sand","cut_red_sandstone",
-  "sandstone","smooth_red_sandstone","polished_tuff","bricks","packed_mud","mud_bricks",
-  "prismarine","prismarine_bricks","dark_prismarine","prismarine_shard","prismarine_crystals",
-  "red_nether_bricks","nether_wart","quartz_bricks","purpur_block","end_stone_bricks","glowstone_dust",
-  "bamboo_planks","polished_granite_stairs","granite_stairs","sandstone_stairs","smooth_sandstone_stairs",
-  "bamboo_stairs","red_nether_brick_stairs","crimson_stairs","warped_stairs","brick_stairs","mud_brick_stairs",
+  "sandstone","smooth_red_sandstone","polished_tuff","bricks","packed_mud",
+  "mud_bricks","prismarine","prismarine_bricks","dark_prismarine","prismarine_shard",
+  "prismarine_crystals","red_nether_bricks","quartz_bricks","purpur_block","end_stone_bricks",
+  "polished_granite_stairs","granite_stairs","sandstone_stairs","smooth_sandstone_stairs","bamboo_stairs",
+  "red_nether_brick_stairs","crimson_stairs","warped_stairs","brick_stairs","mud_brick_stairs",
   "purpur_stairs","prismarine_stairs","prismarine_brick_stairs","end_stone_brick_stairs","dark_prismarine_stairs",
-  "polished_andesite_stairs","polished_diorite_stairs","polished_diorite","polished_andesite",
-  "polished_blackstone_stairs","bamboo_slab","polished_blackstone_brick_stairs","granite_slab","sandstone_slab",
-  "diamond_block","emerald_block","redstone_block","lapis_block","cut_copper","gold_block","copper_block",
-  "sea_lantern","enchanting_table","anvil","ender_chest","crafter","trapped_chest","grindstone","stonecutter",
-  "smithing_table","smoker","blast_furnace","furnace","barrel"
+  "polished_andesite_stairs","polished_diorite_stairs","polished_diorite","polished_andesite","polished_blackstone_stairs",
+  "polished_blackstone_brick_stairs","diamond_block","emerald_block","redstone_block","lapis_block",
+  "cut_copper","gold_block","copper_block","sea_lantern","enchanting_table",
+  "anvil","stonecutter","smithing_table","smoker","furnace",
+  "barrel"
 ];
 
 function iconSources(id) {
@@ -477,8 +526,10 @@ const DATA = [
     ["Tallo carmesí","crimson_stem"],["Tallo distorsionado","warped_stem"],["Bloque de bambú","bamboo_block"],
     ["Tablas de roble","oak_planks"],["Tablas de abeto","spruce_planks"],["Tablas de abedul","birch_planks"],["Tablas de la selva","jungle_planks"],
     ["Tablas de acacia","acacia_planks"],["Tablas de roble oscuro","dark_oak_planks"],["Tablas de mangle","mangrove_planks"],["Tablas de cerezo","cherry_planks"],
-    ["Tablas carmesí","crimson_planks"],["Tablas distorsionadas","warped_planks"],["Tablas de bambú","bamboo_planks"],
-    ["Palo","stick"],["Bambú","bamboo"],["Retoño de roble","oak_sapling"],["Carbón vegetal","charcoal"]
+    ["Tablas carmesí","crimson_planks"],["Tablas distorsionadas","warped_planks"],
+    ["Palo","stick"],["Bambú","bamboo"],["Retoño de roble","oak_sapling"],["Retoño de abeto","spruce_sapling"],["Retoño de abedul","birch_sapling"],["Retoño de la selva","jungle_sapling"],
+    ["Retoño de acacia","acacia_sapling"],["Retoño de roble oscuro","dark_oak_sapling"],["Retoño de cerezo","cherry_sapling"],["Retoño de roble pálido","pale_oak_sapling"],
+    ["Propágulo de mangle","mangrove_propagule"],["Carbón vegetal","charcoal"]
   ]},
   { name: "Escaleras", icon: "stone_brick_stairs", emoji: "🪜", color: "#7b6c54", items: [
     ["Escaleras de roble","oak_stairs"],["Escaleras de abeto","spruce_stairs"],["Escaleras de abedul","birch_stairs"],["Escaleras de la selva","jungle_stairs"],
@@ -505,11 +556,11 @@ const DATA = [
     ["Losa de piedra","stone_slab"],
     ["Losa de roble","oak_slab"],["Losa de abeto","spruce_slab"],["Losa de abedul","birch_slab"],["Losa de la selva","jungle_slab"],
     ["Losa de acacia","acacia_slab"],["Losa de roble oscuro","dark_oak_slab"],["Losa de mangle","mangrove_slab"],["Losa de cerezo","cherry_slab"],
-    ["Losa de bambú","bamboo_slab"],["Losa carmesí","crimson_slab"],["Losa distorsionada","warped_slab"],
+    ["Losa carmesí","crimson_slab"],["Losa distorsionada","warped_slab"],
     ["Losa de piedra labrada","cobblestone_slab"],["Losa de ladrillos de piedra","stone_brick_slab"],
     ["Losa de pizarra labrada","cobbled_deepslate_slab"],["Losa de ladrillos de pizarra","deepslate_brick_slab"],
-    ["Losa de andesita","andesite_slab"],["Losa de diorita","diorite_slab"],["Losa de granito","granite_slab"],
-    ["Losa de arenisca","sandstone_slab"],["Losa de ladrillos del Nether","nether_brick_slab"],["Losa de cuarzo","quartz_slab"]
+    ["Losa de andesita","andesite_slab"],["Losa de diorita","diorite_slab"],
+    ["Losa de ladrillos del Nether","nether_brick_slab"],["Losa de cuarzo","quartz_slab"]
   ]},
   { name: "Minerales y Metales", icon: "diamond", emoji: "💎", color: "#2e97a5", items: [
     ["Carbón","coal"],["Bloque de carbón","coal_block"],
@@ -551,14 +602,14 @@ const DATA = [
     ["Pistón","piston"],["Pistón pegajoso","sticky_piston"],["Tolva","hopper"],["Soltador","dropper"],["Dispensador","dispenser"],
     ["Palanca","lever"],["Botón de piedra","stone_button"],["Botón de roble","oak_button"],
     ["Placa de presión (piedra)","stone_pressure_plate"],["Placa de presión (madera)","oak_pressure_plate"],
-    ["Lámpara de redstone","redstone_lamp"],["Crafteador","crafter"],
+    ["Lámpara de redstone","redstone_lamp"],
     ["Riel","rail"],["Riel propulsor","powered_rail"],["Riel detector","detector_rail"],["TNT","tnt"],
     ["Antorcha","torch"],["Antorcha de almas","soul_torch"],["Farol","lantern"],["Farol marino","sea_lantern"],["Champilámpara","shroomlight"],
     ["Vidrio","glass"],["Panel de vidrio","glass_pane"],["Botella de vidrio","glass_bottle"],["Lana blanca","white_wool"],["Papel","paper"],["Libro","book"],["Librero","bookshelf"],
-    ["Escalera de mano","ladder"],["Andamio","scaffolding"],
-    ["Cofre","chest"],["Cofre trampa","trapped_chest"],["Cofre de ender","ender_chest"],["Barril","barrel"],
-    ["Horno","furnace"],["Alto horno","blast_furnace"],["Ahumador","smoker"],
-    ["Mesa de herrería","smithing_table"],["Cortapiedras","stonecutter"],["Afiladora","grindstone"],["Yunque","anvil"],
+    ["Telaraña","cobweb"],["Escalera de mano","ladder"],["Andamio","scaffolding"],
+    ["Cofre","chest"],["Barril","barrel"],
+    ["Horno","furnace"],["Ahumador","smoker"],
+    ["Mesa de herrería","smithing_table"],["Cortapiedras","stonecutter"],["Yunque","anvil"],
     ["Mesa de encantamientos","enchanting_table"],["Fogata","campfire"],
     ["Marco","item_frame"],["Etiqueta","name_tag"]
   ]}
@@ -611,20 +662,23 @@ DATA.forEach((cat, ci) => {
 // verificación del total en el chip "Todos"
 const total = DATA.reduce((s, c) => s + c.items.length, 0);
 document.querySelector('[data-cat="all"]').innerHTML = `<b>Todos</b> · ${total}`;
+document.getElementById('cAll').textContent = total;
 
 const searchInput = document.getElementById('search');
 const noResults = document.getElementById('noResults');
-const replaceToggle = document.getElementById('replaceToggle');
+const viewAll = document.getElementById('viewAll');
+const viewKeep = document.getElementById('viewKeep');
+const viewPending = document.getElementById('viewPending');
 const markToggle = document.getElementById('markToggle');
 const clearMarks = document.getElementById('clearMarks');
 const copyMarks = document.getElementById('copyMarks');
 const replaceCount = document.getElementById('replaceCount');
 let activeCat = 'all';
-let replaceMode = false;
+let viewMode = 'all';   // all | keep | pending
 let markMode = false;
 
 // ---- marcados: se guardan en este navegador (localStorage) ----
-const STORE = 'almacen_marcados';
+const STORE = 'almacen_marcados_v3';
 function loadMarks() {
   try { return new Set(JSON.parse(localStorage.getItem(STORE)) || DEFAULT_MARKS); }
   catch { return new Set(DEFAULT_MARKS); }
@@ -639,6 +693,8 @@ function refreshMarks() {
     it.classList.toggle('flagged', marked.has(it.dataset.id));
   });
   replaceCount.textContent = marked.size;
+  document.getElementById('cKeep').textContent =
+    DATA.reduce((s, c) => s + c.items.length, 0) - marked.size;
 }
 refreshMarks();
 
@@ -657,7 +713,7 @@ markToggle.addEventListener('click', () => {
   markToggle.classList.toggle('active', markMode);
   document.body.classList.toggle('mark-mode', markMode);
   // no se puede marcar lo que está oculto → al entrar, salgo del filtro "ver marcados"
-  if (markMode && replaceMode) { replaceMode = false; replaceToggle.classList.remove('active'); document.body.classList.remove('replace-mode'); }
+  if (markMode && viewMode !== 'all') setView('all');
   applyFilter();
 });
 
@@ -671,13 +727,19 @@ container.addEventListener('click', e => {
   refreshMarks();
 });
 
-// ver solo los marcados + su sugerencia
-replaceToggle.addEventListener('click', () => {
-  replaceMode = !replaceMode;
-  replaceToggle.classList.toggle('active', replaceMode);
-  document.body.classList.toggle('replace-mode', replaceMode);
+// tres vistas: todo / solo lo que se guarda / pendientes por definir
+function setView(m) {
+  viewMode = m;
+  viewAll.classList.toggle('active', m === 'all');
+  viewKeep.classList.toggle('active', m === 'keep');
+  viewPending.classList.toggle('active', m === 'pending');
+  // la sugerencia de reemplazo solo tiene sentido viendo los pendientes
+  document.body.classList.toggle('replace-mode', m === 'pending');
   applyFilter();
-});
+}
+viewAll.addEventListener('click', () => setView('all'));
+viewKeep.addEventListener('click', () => setView('keep'));
+viewPending.addEventListener('click', () => setView('pending'));
 
 // copiar la lista de marcados (JSON) para pegársela a quien la fije en el código
 copyMarks.addEventListener('click', async () => {
@@ -707,11 +769,12 @@ function applyFilter() {
   let visible = 0;
   document.querySelectorAll('.category').forEach(sec => {
     // en modo reemplazo ignoramos el filtro de categoría (mostramos todo lo marcado)
-    const catMatch = replaceMode || activeCat === 'all' || sec.dataset.cat === activeCat;
+    const catMatch = viewMode === 'pending' || activeCat === 'all' || sec.dataset.cat === activeCat;
     let catVisible = 0;
     if (catMatch) {
       sec.querySelectorAll('.item').forEach(it => {
-        const flagOk = !replaceMode || it.classList.contains('flagged');
+        const flag = it.classList.contains('flagged');
+        const flagOk = viewMode === 'all' || (viewMode === 'pending' ? flag : !flag);
         const searchOk = !q || it.dataset.search.includes(q);
         const show = flagOk && searchOk;
         it.classList.toggle('hidden', !show);
