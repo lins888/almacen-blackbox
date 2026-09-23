@@ -202,7 +202,15 @@
     background: #e8a33d; color: #3a2a12; text-shadow: none;
     box-shadow: inset 0 3px 0 #ffd27a, inset 0 -4px 0 #b57a20;
   }
-  .toggle-row { display: flex; justify-content: center; margin: 4px 0 2px; }
+  .toggle-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 4px 0 2px; }
+  .replace-toggle.danger { background: #6e2f2f; box-shadow: inset 0 3px 0 #b05252, inset 0 -4px 0 #3f1a1a; color: #ffd0d0; }
+  .replace-toggle.danger:hover { background: #8a3a3a; }
+  .mark-hint { text-align: center; color: #e8a33d; font-size: 1.1rem; margin: 8px 0 0; text-shadow: 1px 1px 0 #000; display: none; }
+  body.mark-mode .mark-hint { display: block; }
+
+  /* en modo marcar, los ítems son clicables */
+  body.mark-mode .item { cursor: pointer; }
+  body.mark-mode .item:hover { outline: 2px solid #e8a33d; outline-offset: -3px; background: #b59a6a; }
 
   /* tarjeta marcada como "a reemplazar" */
   .item.flagged { box-shadow: inset 4px 0 0 #e8a33d; }
@@ -260,8 +268,11 @@
   </div>
 
   <div class="toggle-row">
-    <div class="replace-toggle" id="replaceToggle">🔄 <b>Bloques a reemplazar</b> · <span id="replaceCount">0</span></div>
+    <div class="replace-toggle" id="markToggle">✏️ <b>Marcar bloques</b></div>
+    <div class="replace-toggle" id="replaceToggle">🔄 <b>Ver marcados</b> · <span id="replaceCount">0</span></div>
+    <div class="replace-toggle danger" id="clearMarks">🗑️ Limpiar</div>
   </div>
+  <p class="mark-hint" id="markHint">👆 Tocá los bloques que quieras reemplazar. Se guardan en este navegador.</p>
 
   <div class="search-box">
     <input type="text" id="search" placeholder="🔍 Buscar ítem o ID… (ej: escaleras, hierro, pulida)">
@@ -561,9 +572,8 @@ DATA.forEach((cat, ci) => {
   const itemsHtml = cat.items.map(([name, id]) => {
     counter++;
     const rep = REPLACE[id];
-    const flag = rep ? ' flagged' : '';
-    const swap = rep ? `<div class="swap">${iconHtml(rep[2], cat.emoji)}<div class="swap-info"><span class="swap-arrow">reemplazar por</span><div class="swap-name">${rep[1]}</div><span class="swap-reason">${rep[0]}</span></div></div>` : '';
-    return `<div class="item${flag}" data-search="${(name + ' ' + id).toLowerCase()}">
+    const swap = rep ? `<div class="swap">${iconHtml(rep[2], cat.emoji)}<div class="swap-info"><span class="swap-arrow">sugerencia · reemplazar por</span><div class="swap-name">${rep[1]}</div><span class="swap-reason">${rep[0]}</span></div></div>` : '';
+    return `<div class="item" data-id="${id}" data-search="${(name + ' ' + id).toLowerCase()}">
       ${iconHtml(id, cat.emoji)}
       <div class="info"><div class="name">${name}</div><span class="id">#${String(counter).padStart(3,'0')} · minecraft:${id}</span></div>
       ${swap}
@@ -587,11 +597,31 @@ document.querySelector('[data-cat="all"]').innerHTML = `<b>Todos</b> · ${total}
 const searchInput = document.getElementById('search');
 const noResults = document.getElementById('noResults');
 const replaceToggle = document.getElementById('replaceToggle');
+const markToggle = document.getElementById('markToggle');
+const clearMarks = document.getElementById('clearMarks');
+const replaceCount = document.getElementById('replaceCount');
 let activeCat = 'all';
 let replaceMode = false;
+let markMode = false;
 
-// cuántos ítems están marcados para reemplazo
-document.getElementById('replaceCount').textContent = Object.keys(REPLACE).length;
+// ---- marcados: se guardan en este navegador (localStorage) ----
+const STORE = 'almacen_marcados';
+function loadMarks() {
+  try { return new Set(JSON.parse(localStorage.getItem(STORE)) || Object.keys(REPLACE)); }
+  catch { return new Set(Object.keys(REPLACE)); }
+}
+let marked = loadMarks();
+
+function saveMarks() { localStorage.setItem(STORE, JSON.stringify([...marked])); }
+
+// pinta la marca naranja en cada tarjeta según el set y actualiza el contador
+function refreshMarks() {
+  document.querySelectorAll('.item').forEach(it => {
+    it.classList.toggle('flagged', marked.has(it.dataset.id));
+  });
+  replaceCount.textContent = marked.size;
+}
+refreshMarks();
 
 chipsBar.addEventListener('click', e => {
   const chip = e.target.closest('.stat-chip');
@@ -602,10 +632,39 @@ chipsBar.addEventListener('click', e => {
   applyFilter();
 });
 
+// modo marcar: tocar un bloque lo marca/desmarca
+markToggle.addEventListener('click', () => {
+  markMode = !markMode;
+  markToggle.classList.toggle('active', markMode);
+  document.body.classList.toggle('mark-mode', markMode);
+  // no se puede marcar lo que está oculto → al entrar, salgo del filtro "ver marcados"
+  if (markMode && replaceMode) { replaceMode = false; replaceToggle.classList.remove('active'); document.body.classList.remove('replace-mode'); }
+  applyFilter();
+});
+
+container.addEventListener('click', e => {
+  if (!markMode) return;
+  const it = e.target.closest('.item');
+  if (!it) return;
+  const id = it.dataset.id;
+  if (marked.has(id)) marked.delete(id); else marked.add(id);
+  saveMarks();
+  refreshMarks();
+});
+
+// ver solo los marcados + su sugerencia
 replaceToggle.addEventListener('click', () => {
   replaceMode = !replaceMode;
   replaceToggle.classList.toggle('active', replaceMode);
   document.body.classList.toggle('replace-mode', replaceMode);
+  applyFilter();
+});
+
+clearMarks.addEventListener('click', () => {
+  if (!marked.size || !confirm('¿Borrar todos los bloques marcados?')) return;
+  marked.clear();
+  saveMarks();
+  refreshMarks();
   applyFilter();
 });
 
